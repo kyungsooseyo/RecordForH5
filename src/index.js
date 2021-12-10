@@ -1,10 +1,9 @@
-import './style/main.css'
+import './style/main.css';
 
-import randomWord from './js/createRandomStr'
+import randomWord from './js/createRandomStr';
 
-var JSZip = require("jszip");
+var JSZip = require('jszip');
 var FileSaver = require('file-saver');
-
 
 var openCamera = document.getElementById('openCamera'), // 打开摄像头
   closeCamera = document.getElementById('closeCamera'), // 关闭摄像头
@@ -26,17 +25,16 @@ var openCamera = document.getElementById('openCamera'), // 打开摄像头
     audio: true,
     video: {
       width: 480,
-      height: 320
-    }
+      height: 320,
+    },
   },
   canvas = getCanVas(),
   context = canvas.getContext('2d'),
-
   mediaStream,
   mediaRecorder, // 视频录制
   recordTimer, // 视频录制的计时器
   chunks = '', // 录制的视频数据
-  allScreenShots = [],  // 所有的截图
+  allScreenShots = [], // 所有的截图
   allSavedVedio = [],
   recordTime = 0; // 视频录制时间
 
@@ -73,7 +71,7 @@ function success(stream) {
 
 //异常的回调函数
 function error(error) {
-  console.log("访问用户媒体设备失败：", error.name, error.message);
+  console.log('访问用户媒体设备失败：', error.name, error.message);
 }
 
 // 生成canvas 获取context对象
@@ -99,28 +97,31 @@ function base64ToBlob(urlData, type) {
     ia[i] = bytes.charCodeAt(i);
   }
   return new Blob([ab], {
-    type: mime
+    type: mime,
   });
 }
 
-
 // 打开摄像头
 openCamera.onclick = function () {
-  if (navigator.mediaDevices.getUserMedia || navigator.getUserMedia || navigator.webkitGetUserMedia ||
-    navigator.mozGetUserMedia) {
+  if (
+    navigator.mediaDevices.getUserMedia ||
+    navigator.getUserMedia ||
+    navigator.webkitGetUserMedia ||
+    navigator.mozGetUserMedia
+  ) {
     //调用用户媒体设备，访问摄像头
     getUserMedia(container, success, error);
   } else {
-    alert("你的浏览器不支持访问用户媒体设备");
+    alert('你的浏览器不支持访问用户媒体设备');
   }
-}
+};
 
 // 关闭摄像头
 closeCamera.onclick = function () {
   if (mediaStream) {
-    mediaStream.getTracks().forEach(track => {
+    mediaStream.getTracks().forEach((track) => {
       track.stop();
-    })
+    });
     mediaStream = null;
     // video.pause();
     video.src = '';
@@ -128,8 +129,7 @@ closeCamera.onclick = function () {
   } else {
     alert('未检测到摄像头！');
   }
-
-}
+};
 
 //截图
 cutPic.onclick = function () {
@@ -139,7 +139,7 @@ cutPic.onclick = function () {
   }
   //绘制画面
   context.drawImage(video, 0, 0, canvas.width, canvas.height);
-  let imgData = canvas.toDataURL("image/png");
+  let imgData = canvas.toDataURL('image/png');
   let imgBlob = base64ToBlob(imgData);
   allScreenShots.push(imgBlob);
   let download = document.createElement('a');
@@ -159,9 +159,9 @@ cutPic.onclick = function () {
   };
   img.onclick = function () {
     download.click();
-  }
+  };
   img.src = imgData;
-}
+};
 
 // 清空所有截图
 clearPic.onclick = function () {
@@ -174,12 +174,12 @@ clearPic.onclick = function () {
     imgWrap.innerHTML = '暂无截图';
     allScreenShots = [];
   }
-}
+};
 
 // 视频录制
 videoCapture.onclick = function () {
   initVideoRecord();
-}
+};
 
 // 视频录制初始化
 function initVideoRecord() {
@@ -189,13 +189,17 @@ function initVideoRecord() {
   }
   clearTimer();
   if (mediaStream) {
-    mediaRecorder = new MediaRecorder(mediaStream);
+    mediaRecorder = new MediaRecorder(mediaStream); // ~原生自带
     mediaRecorder.ondataavailable = function (e) {
-      // e.data是一个Blob对象
-      // console.log(e.data);
+      // =e.data是一个Blob对象
+      console.log(e.data);
+      blobToBase64(e.data).then((res) => {
+        console.log(res);
+      });
       chunks = e.data;
+
       createVideoData();
-    }
+    };
     mediaRecorder.start();
     setRecordTime();
   } else {
@@ -215,7 +219,7 @@ pause.onclick = function () {
   }
   clearInterval(recordTimer);
   mediaRecorder && mediaRecorder.pause();
-}
+};
 
 // 恢复录制
 start.onclick = function () {
@@ -225,7 +229,7 @@ start.onclick = function () {
   }
   setRecordTime();
   mediaRecorder && mediaRecorder.resume();
-}
+};
 
 // 停止录制并保存视频
 stop.onclick = function () {
@@ -236,7 +240,7 @@ stop.onclick = function () {
   mediaRecorder && mediaRecorder.stop();
   clearTimer();
   mediaRecorder = null;
-}
+};
 
 // 保存视频数据  显示在视频区域
 function createVideoData() {
@@ -265,7 +269,7 @@ function createVideoData() {
   link.href = src;
   videoTag.onclick = function () {
     link.click();
-  }
+  };
 }
 
 // 清空视频预览
@@ -279,8 +283,7 @@ clearVideo.onclick = function () {
     allSavedVedio = [];
     videoWrap.innerHTML = '暂无视频';
   }
-}
-
+};
 
 // 清除定时器 归零录制时间
 function clearTimer() {
@@ -311,7 +314,7 @@ batchDownloadPics.onclick = function () {
   }
   zipUtils('png', allScreenShots);
   // test();
-}
+};
 
 // 批量下载视频
 batchDownloadVideos.onclick = function () {
@@ -320,32 +323,31 @@ batchDownloadVideos.onclick = function () {
     return false;
   }
   zipUtils('flv', allSavedVedio);
-}
+};
 
-
-/* 
-*   批量下载的函数的封装
-*   @param type 
-*   @param data
-*   @param options
-*/
+/*
+ *   批量下载的函数的封装
+ *   @param type
+ *   @param data
+ *   @param options
+ */
 function zipUtils(type, data, options) {
   var resultName = type === 'png' ? 'screen_shots.zip' : 'vedio_collect.zip';
   var zip = new JSZip();
-  data.forEach(chunk => {
+  data.forEach((chunk) => {
     let fileName = randomWord() + '.' + type;
     zip.file(fileName, chunk, options);
-  })
-  zip.generateAsync({
-    type: "blob"
-  })
+  });
+  zip
+    .generateAsync({
+      type: 'blob',
+    })
     .then(function (content) {
       // see FileSaver.js
       FileSaver.saveAs(content, resultName);
       //content 是个Blob对象 type 是application/zip
       // console.log(content);
     });
-
 }
 
 function test() {
@@ -356,13 +358,28 @@ function test() {
   // });
   zip.file('1.txt', 'hello world');
   zip.file('2.txt', 'hello world');
-  zip.generateAsync({
-    type: "blob"
-  })
+  zip
+    .generateAsync({
+      type: 'blob',
+    })
     .then(function (content) {
       // see FileSaver.js
       saveAs(content, 'example.zip');
       //content 是个Blob对象 type 是application/zip
       // console.log(content);
     });
+}
+//! blob格式转成base64
+function blobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const fileReader = new FileReader();
+    fileReader.onload = (e) => {
+      resolve(e.target.result);
+    };
+    // readAsDataURL
+    fileReader.readAsDataURL(blob);
+    fileReader.onerror = () => {
+      reject(new Error('blobToBase64 error'));
+    };
+  });
 }
